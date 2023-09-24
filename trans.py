@@ -39,7 +39,7 @@ def decrypt(keylength, key, ciphertext):
 
 if __name__ == '__main__':
     if len(sys.argv) != 6:
-        print('Usage: python3 transposition.py <keylength> <key> <inputfile> <outputfile> <enc/dec>')
+        print('Usage: python3 trans.py <keylength> <key> <inputfile> <outputfile> <enc/dec>')
         sys.exit(1)
         
     keylength = int(sys.argv[1])
