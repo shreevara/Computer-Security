@@ -24,7 +24,7 @@ context.load_cert_chain("cert.pem", "key.pem")
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-# Replace "remote01.cs.binghamton.edu" with your actual server's domain name
+
 server_domain = "remote.cs.binghamton.edu"
 server_port = 6599  # Replace with your port number
 
