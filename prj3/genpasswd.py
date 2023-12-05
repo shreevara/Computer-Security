@@ -1,5 +1,3 @@
-# genpasswd.py
-
 import hashlib
 import getpass
 from datetime import datetime
@@ -30,8 +28,8 @@ def main():
 
     while True:
         user_id = input("Enter your ID: ")
-        if not user_id.islower():
-            print("The ID should only contain lower-case letters")
+        if not user_id.islower() or any(char.isdigit() for char in user_id):
+            print("The ID should only contain lowercase letters")
             continue
 
         if check_id_exists(user_id):

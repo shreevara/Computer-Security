@@ -1,8 +1,7 @@
-# serv.py
-
 import socket
 import ssl
 import hashlib
+import sys
 
 # Define the function to validate user credentials
 def validate_user(user_id, password):
@@ -18,32 +17,40 @@ def validate_user(user_id, password):
                 return True
     return False
 
-# Create an SSL socket server
-context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-context.load_cert_chain("cert.pem", "key.pem")
+if __name__ == "__main__":
+    # Check if the correct number of command-line arguments is provided
+    if len(sys.argv) != 2:
+        print("Usage: python3 serv.py <server_port>")
+        sys.exit(1)
 
-server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_port = int(sys.argv[1])
 
+    # Create an SSL socket server
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    context.load_cert_chain("cert.pem", "key.pem")
 
-server_domain = "remote.cs.binghamton.edu"
-server_port = 6599  # Replace with your port number
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-server_ip = socket.gethostbyname(server_domain)
+    server_domain = "remote07.cs.binghamton.edu" 
 
-server_socket.bind((server_ip, server_port))
-server_socket.listen(1)
+    server_ip = socket.gethostbyname(server_domain)
 
-while True:
-    print("Waiting for a client to connect...")
-    client_socket, _ = server_socket.accept()
-    ssl_client_socket = context.wrap_socket(client_socket, server_side=True)
+    server_socket.bind((server_ip, server_port))
+    server_socket.listen(1)
 
-    user_id = ssl_client_socket.recv(1024).decode()
-    password = ssl_client_socket.recv(1024).decode()
+    print(f"Server started on {server_domain}:{server_port}")
 
-    if validate_user(user_id, password):
-        ssl_client_socket.send("Correct ID and password".encode())
-    else:
-        ssl_client_socket.send("The ID/password is incorrect".encode())
+    while True:
+        print("Waiting for a client to connect...")
+        client_socket, _ = server_socket.accept()
+        ssl_client_socket = context.wrap_socket(client_socket, server_side=True)
 
-    ssl_client_socket.close()
+        user_id = ssl_client_socket.recv(1024).decode()
+        password = ssl_client_socket.recv(1024).decode()
+
+        if validate_user(user_id, password):
+            ssl_client_socket.send("Correct ID and password".encode())
+        else:
+            ssl_client_socket.send("The ID/password is incorrect".encode())
+
+        ssl_client_socket.close()
