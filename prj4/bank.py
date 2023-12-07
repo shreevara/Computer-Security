@@ -102,7 +102,7 @@ def main(server_port):
     private_key = load_private_key()
 
     s = socket(AF_INET, SOCK_STREAM)
-    s.bind(("remote.cs.binghamton.edu", server_port))
+    s.bind(("remote07.cs.binghamton.edu", server_port))
     s.listen(5)
 
     print("Bank Server listening on port", server_port, "....")
