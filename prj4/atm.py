@@ -2,6 +2,7 @@ from socket import socket, AF_INET, SOCK_STREAM
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 import pickle
+import sys
 
 def load_public_key():
     with open("public_key.pem", "rb") as key_file:
@@ -18,11 +19,11 @@ def encrypt_with_public_key(public_key, data):
     )
     return ciphertext
 
-def main():
+def main(server_domain, server_port):
     public_key = load_public_key()
 
     s = socket(AF_INET, SOCK_STREAM)
-    s.connect(("remote.cs.binghamton.edu", 6599))
+    s.connect((server_domain, server_port))
 
     # Step S3
     sym_key = "sample_symmetric_key"  # Replace with actual symmetric key generation
@@ -116,4 +117,10 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) != 3:
+        print("Usage: python3 atm.py <server_domain> <server_port>")
+        sys.exit(1)
+
+    server_domain = sys.argv[1]
+    server_port = int(sys.argv[2])
+    main(server_domain, server_port)

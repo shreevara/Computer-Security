@@ -2,6 +2,7 @@ from socket import socket, AF_INET, SOCK_STREAM
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 import pickle
+import sys
 
 def load_private_key():
     with open("private_key.pem", "rb") as key_file:
@@ -88,14 +89,14 @@ def perform_money_transfer(user_id, sender_account, recipient_id, transfer_amoun
     return "Your transaction is successful\n"
 
 
-def main():
+def main(server_port):
     private_key = load_private_key()
 
     s = socket(AF_INET, SOCK_STREAM)
-    s.bind(("remote.cs.binghamton.edu", 6599))
+    s.bind(("remote.cs.binghamton.edu", server_port))
     s.listen(5)
 
-    print("Bank Server listening on port 12345...")
+    print("Bank Server listening on port", server_port, "....")
 
     while True:
         conn, addr = s.accept()
@@ -162,4 +163,9 @@ def main():
            
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) != 2:
+        print("Usage: python3 bank.py <server_port>")
+        sys.exit(1)
+
+    server_port = int(sys.argv[1])
+    main(server_port)
