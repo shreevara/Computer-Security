@@ -64,32 +64,34 @@ def main():
             choice = input("Enter your choice (1, 2, or 3): ")
 
             if choice == "1":
-                print("Select an account to transfer from:")
-                print("1. Savings")
-                print("2. Checking")
+                s.sendall(b"1")
+                while True:
+                    print("Select an account to transfer from:")
+                    print("1. Savings")
+                    print("2. Checking")
 
-                account_choice = input("Enter your choice (1 or 2): ")
+                    account_choice = input("Enter your choice (1 or 2): ")
 
-                if account_choice in ["1", "2"]:
-                    recipient_id = input("Enter recipient's ID: ")
-                    transfer_amount = float(input("Enter the transfer amount: "))
+                    if account_choice in ["1", "2"]:
+                        s.sendall(account_choice.encode('utf-8'))
 
-                    # Implement S6 - S7 for money transfer
-                    data_to_send = f"{account_choice} {recipient_id} {transfer_amount}"
-                    s.sendall(data_to_send.encode('utf-8'))
+                        recipient_id = input("Enter recipient's ID: ")
+                        s.sendall(recipient_id.encode('utf-8'))
 
-                    # Receive and print the response from the server
-                    server_response = s.recv(1024)
-                    print(server_response.decode('utf-8'))
+                        transfer_amount = float(input("Enter the transfer amount: "))
+                        s.sendall(str(transfer_amount).encode('utf-8'))
 
-                else:
-                    print("Incorrect input. Please try again.")
+                        # Receive and print the response from the server
+                        server_response = s.recv(1024)
+                        print(server_response.decode('utf-8'))
+                        break
+
+                    else:
+                        print("Incorrect input. Please try again.")
 
             elif choice == "2":
-                s.sendall(b"2")  # Step S7
+                s.sendall(b"2")  
 
-                # Implement S7 for checking balance
-                # Receive and print the balances of both savings and checking accounts from the server
                 balances_response = s.recv(1024).decode('utf-8')
 
                 # Parse and print the balances
@@ -98,8 +100,8 @@ def main():
                     user_data = user_balance.split()
                     if len(user_data) == 3:
                         user_id, savings_balance, checking_balance = user_data
-                        print(f"{user_id}'s savings account balance: {savings_balance}")
-                        print(f"{user_id}'s checking account balance: {checking_balance}")
+                        print(f"Your savings account balance: {savings_balance}")
+                        print(f"Your checking account balance: {checking_balance} \n")
                     else:
                         print("Invalid balance format received from the server.")
 
