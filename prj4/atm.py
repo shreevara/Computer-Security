@@ -3,14 +3,17 @@ from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 import pickle
 import sys
+from cryptography.fernet import Fernet
+
 
 def load_public_key():
     with open("public_key.pem", "rb") as key_file:
         return serialization.load_pem_public_key(key_file.read(), backend=None)
 
+
 def encrypt_with_public_key(public_key, data):
     ciphertext = public_key.encrypt(
-        data.encode('utf-8'),
+        data,
         padding.OAEP(
             mgf=padding.MGF1(algorithm=hashes.SHA256()),
             algorithm=hashes.SHA256(),
@@ -19,6 +22,13 @@ def encrypt_with_public_key(public_key, data):
     )
     return ciphertext
 
+
+def encrypt_with_sym_key(key, data):
+    f = Fernet(key)
+    encrypted_data = f.encrypt(data.encode())
+    return encrypted_data
+
+
 def main(server_domain, server_port):
     public_key = load_public_key()
 
@@ -26,14 +36,16 @@ def main(server_domain, server_port):
     s.connect((server_domain, server_port))
 
     # Step S3
-    sym_key = "sample_symmetric_key"  # Replace with actual symmetric key generation
+    sym_key = Fernet.generate_key()
     sym_key_encrypted = encrypt_with_public_key(public_key, sym_key)
 
     user_id = input("Enter your ID: ")
     password = input("Enter your password: ")
     id_password = f"{user_id} {password}"
-    id_password_encrypted = encrypt_with_public_key(public_key, id_password)
 
+    id_password_encrypted = encrypt_with_sym_key(sym_key, id_password)
+
+    #Step S4
     data_to_send = pickle.dumps((sym_key_encrypted, id_password_encrypted))
     s.sendall(data_to_send)
 
@@ -46,8 +58,7 @@ def main(server_domain, server_port):
         user_id = input("Enter your ID: ")
         password = input("Enter your password: ")
         id_password = f"{user_id} {password}"
-        id_password_encrypted = encrypt_with_public_key(public_key, id_password)
-
+        id_password_encrypted = encrypt_with_sym_key(sym_key, id_password)
         data_to_send = pickle.dumps((sym_key_encrypted, id_password_encrypted))
         s.sendall(data_to_send)
 
@@ -88,7 +99,7 @@ def main(server_domain, server_port):
                         break
 
                     else:
-                        print("Incorrect input. Please try again.")
+                        print("Incorrect input. Please try again.\n")
 
             elif choice == "2":
                 s.sendall(b"2")  

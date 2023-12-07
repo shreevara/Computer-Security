@@ -3,6 +3,8 @@ from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 import pickle
 import sys
+from cryptography.fernet import Fernet
+
 
 def load_private_key():
     with open("private_key.pem", "rb") as key_file:
@@ -22,6 +24,12 @@ def decrypt_with_private_key(private_key, ciphertext):
         )
     )
     return plaintext.decode('utf-8')
+
+
+def decrypt_with_sym_key(key, encrypted_data):
+    f = Fernet(key)
+    decrypted_data = f.decrypt(encrypted_data)
+    return decrypted_data.decode()
 
 def validate_credentials(user_id, password):
     # Load user credentials from the "password" file
@@ -89,6 +97,7 @@ def perform_money_transfer(user_id, sender_account, recipient_id, transfer_amoun
     return "Your transaction is successful\n"
 
 
+
 def main(server_port):
     private_key = load_private_key()
 
@@ -109,7 +118,7 @@ def main(server_port):
 
             # Step S4
             sym_key = decrypt_with_private_key(private_key, sym_key_encrypted)
-            id_password = decrypt_with_private_key(private_key, id_password_encrypted)
+            id_password = decrypt_with_sym_key(sym_key, id_password_encrypted)
             user_id, password = id_password.split()
 
             while not validate_credentials(user_id, password):
@@ -119,7 +128,7 @@ def main(server_port):
                 client_data = conn.recv(1024)
                 sym_key_encrypted, id_password_encrypted = pickle.loads(client_data)
                 sym_key = decrypt_with_private_key(private_key, sym_key_encrypted)
-                id_password = decrypt_with_private_key(private_key, id_password_encrypted)
+                id_password = decrypt_with_sym_key(sym_key, id_password_encrypted)
                 user_id, password = id_password.split()
 
             # Step S4 validation
@@ -135,7 +144,7 @@ def main(server_port):
                     try:
 
                         if client_choice == "1":  # Client selected option 1 (Transfer money)
-                            # Implement steps S6 - S7 for money transfer
+
                             account_choice = conn.recv(1024).decode('utf-8')
                             recipient_id = conn.recv(1024).decode('utf-8')
                             transfer_amount = conn.recv(1024).decode('utf-8')
