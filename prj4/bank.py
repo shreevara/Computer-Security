@@ -3,6 +3,7 @@ from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 import pickle
 import sys
+import socket
 from cryptography.fernet import Fernet
 
 
@@ -100,9 +101,12 @@ def perform_money_transfer(user_id, sender_account, recipient_id, transfer_amoun
 
 def main(server_port):
     private_key = load_private_key()
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+   
+    server_domain = "remote.cs.binghamton.edu" 
+    server_ip = socket.gethostbyname(server_domain)
+    s.bind((server_ip, server_port))
 
-    s = socket(AF_INET, SOCK_STREAM)
-    s.bind(("remote07.cs.binghamton.edu", server_port))
     s.listen(5)
 
     print("Bank Server listening on port", server_port, "....")
